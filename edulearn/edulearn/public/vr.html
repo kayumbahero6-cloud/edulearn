@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VR scene</title>
+<style>html,body{margin:0;height:100%;background:#050816;color:#fff;font-family:system-ui,sans-serif}#msg{position:fixed;inset:0;display:grid;place-items:center;text-align:center;padding:1rem}</style>
+<script src="/vendor/aframe/aframe.min.js"></script>
+</head>
+<body>
+<div id="msg">Loading scene…</div>
+<script>
+// Scenes are described as data (shape, colour, position, label), never as HTML, and every value is re-validated here.
+(function () {
+  var cfg = {};
+  try { cfg = JSON.parse(decodeURIComponent(location.hash.slice(1))) || {}; } catch (e) {}
+  var HEX = /^#[0-9a-fA-F]{6}$/, SHAPES = ['sphere','box','cylinder','cone','torus','plane','ring'];
+  var vec = function (s, d) { var a = String(s || d).trim().split(/\s+/).map(Number); return a.length === 3 && a.every(isFinite) ? a.map(function (x) { return Math.max(-500, Math.min(500, x)); }).join(' ') : d; };
+  var scene = document.createElement('a-scene');
+  scene.setAttribute('embedded', ''); scene.setAttribute('vr-mode-ui', 'enabled: true'); scene.setAttribute('renderer', 'antialias: true');
+  var sky = document.createElement('a-sky'); sky.setAttribute('color', HEX.test(cfg.sky) ? cfg.sky : '#0b1020');
+  if (typeof cfg.panorama_url === 'string' && /^(https:\/\/|\/files\/)/.test(cfg.panorama_url)) sky.setAttribute('src', cfg.panorama_url);
+  scene.appendChild(sky);
+  var ground = document.createElement('a-plane'); ground.setAttribute('rotation', '-90 0 0'); ground.setAttribute('width', '60'); ground.setAttribute('height', '60'); ground.setAttribute('color', HEX.test(cfg.ground) ? cfg.ground : '#1b2a41'); scene.appendChild(ground);
+  var light = document.createElement('a-light'); light.setAttribute('type', 'ambient'); light.setAttribute('intensity', '0.9'); scene.appendChild(light);
+  var sun = document.createElement('a-light'); sun.setAttribute('type', 'directional'); sun.setAttribute('position', '2 4 2'); sun.setAttribute('intensity', '0.8'); scene.appendChild(sun);
+  (Array.isArray(cfg.entities) ? cfg.entities.slice(0, 60) : []).forEach(function (e) {
+    var shape = SHAPES.indexOf(e.shape) >= 0 ? e.shape : 'sphere';
+    var el = document.createElement('a-' + shape);
+    el.setAttribute('color', HEX.test(e.color) ? e.color : '#4cc9f0'); el.setAttribute('position', vec(e.position, '0 1.5 -3')); el.setAttribute('scale', vec(e.scale, '1 1 1'));
+    if (e.animate === 'spin') el.setAttribute('animation', 'property: rotation; to: 0 360 0; loop: true; dur: 12000; easing: linear');
+    if (e.animate === 'orbit') el.setAttribute('animation', 'property: rotation; to: 0 360 0; loop: true; dur: 20000; easing: linear');
+    scene.appendChild(el);
+    if (typeof e.label === 'string' && e.label) {
+      var p = vec(e.position, '0 1.5 -3').split(' ').map(Number), s = vec(e.scale, '1 1 1').split(' ').map(Number);
+      var t = document.createElement('a-text'); t.setAttribute('value', e.label.slice(0, 60)); t.setAttribute('align', 'center'); t.setAttribute('color', '#ffffff'); t.setAttribute('width', '3');
+      t.setAttribute('position', p[0] + ' ' + (p[1] + Math.max(s[1], 0.4) * 0.7 + 0.25) + ' ' + p[2]); scene.appendChild(t);
+    }
+  });
+  var cam = document.createElement('a-entity'); cam.setAttribute('position', '0 1.6 0');
+  var c = document.createElement('a-camera'); c.setAttribute('look-controls', 'touchEnabled: true'); c.setAttribute('wasd-controls', 'acceleration: 20');
+  var cur = document.createElement('a-cursor'); cur.setAttribute('color', '#f4b400'); c.appendChild(cur); cam.appendChild(c); scene.appendChild(cam);
+  scene.addEventListener('loaded', function () { var m = document.getElementById('msg'); if (m) m.remove(); });
+  document.body.appendChild(scene);
+  setTimeout(function () { var m = document.getElementById('msg'); if (m) m.textContent = 'The 3D scene is taking a while to load. Your device may not support WebGL.'; }, 9000);
+})();
+</script>
+</body>
+</html>

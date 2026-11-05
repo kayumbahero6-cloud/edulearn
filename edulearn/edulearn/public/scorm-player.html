@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Interactive lesson · EduLearn</title>
+<link rel="stylesheet" href="/css/app.css">
+<style>
+  body { display: flex; flex-direction: column; height: 100vh; }
+  header.bar { display: flex; align-items: center; gap: .75rem; padding: .5rem 1rem; background: var(--kivu); color: #fff; }
+  header.bar strong { flex: 1; font-family: var(--font-head); } header.bar .chip { background: var(--sun); color: #111; }
+  iframe { flex: 1; width: 100%; border: 0; background: #fff; }
+</style>
+</head>
+<body>
+<header class="bar"><strong id="title">Loading lesson…</strong><span class="chip" id="status" role="status" aria-live="polite">Starting</span><button class="btn sm" id="close" type="button" style="color:#fff;border-color:rgba(255,255,255,.5)">Close</button></header>
+<iframe id="sco" title="Interactive lesson" allow="fullscreen; autoplay"></iframe>
+<script src="/js/scorm-player.js"></script>
+</body>
+</html>
